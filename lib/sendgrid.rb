@@ -28,7 +28,7 @@ module SendGrid
                       :default_footer_text, :default_spamcheck_score, :default_sg_unique_args
       end
       attr_accessor :sg_category, :sg_options, :sg_disabled_options, :sg_recipients, :sg_substitutions,
-                    :subscriptiontrack_text, :footer_text, :spamcheck_score, :sg_unique_args
+                    :subscriptiontrack_text, :footer_text, :spamcheck_score, :sg_unique_args, :sg_sections
     end
 
     # NOTE: This commented-out approach may be a "safer" option for Rails 3, but it
@@ -135,6 +135,14 @@ module SendGrid
     @sg_substitutions[placeholder] = subs
   end
 
+  # Call within mailer method to add an array of sections
+  # NOTE: you must ensure that the length of the sections equals the
+  #       length of the sendgrid_recipients.
+  def sendgrid_section(placeholder, section)
+    @sg_sections ||= {}
+    @sg_sections[placeholder] = section
+  end
+
   # Call within mailer method to override the default value.
   def sendgrid_subscriptiontrack_text(texts)
     @subscriptiontrack_text = texts
@@ -229,6 +237,11 @@ module SendGrid
     # Set custom substitions
     if @sg_substitutions && !@sg_substitutions.empty?
       header_opts[:sub] = @sg_substitutions
+    end
+
+    # Set custom sections
+    if @sg_sections && !@sg_sections.empty?
+      header_opts[:section] = @sg_sections
     end
 
     # Set enables/disables

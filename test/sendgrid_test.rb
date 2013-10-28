@@ -29,7 +29,15 @@ class SendgridTest < Test::Unit::TestCase
   should "accept a hash of unique args at the class level" do
     assert_equal ({ :test_arg => "test value" }), SendgridUniqueArgsMailer.default_sg_unique_args
   end
-  
+
+  should 'allow sections to be added to Sendgrid headers' do
+    @options.delete(:substitutions)
+    SendgridSectionMailer.section_test_email(@options).deliver
+    expected = { 'section' => { 'test_section' => 'test_data' } }
+    actual = JSON.parse(mail.header['X-SMTPAPI'].value)
+    assert_equal(expected, actual)
+  end
+
   should "pass unique args from both the mailer class and the mailer method through custom headers" do
     @options.delete(:substitutions)
     SendgridUniqueArgsMailer.unique_args_test_email(@options).deliver
